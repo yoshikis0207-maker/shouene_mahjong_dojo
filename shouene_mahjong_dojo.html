@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>省エネ麻雀道場 - 何切る・押し引き練習</title>
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  background: radial-gradient(ellipse at top, #0f3d2e 0%, #0a2a20 55%, #061a14 100%);
+  color: #f3efe6;
+  overscroll-behavior-y: contain;
+  -webkit-user-select: none; user-select: none;
+}
+#app { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; position: relative; }
+
+/* ---------- Header ---------- */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px 10px;
+  background: linear-gradient(180deg, #16251c, #0f3d2e00);
+}
+.topbar .brand { display: flex; align-items: center; gap: 8px; }
+.topbar .brand .tile-icon {
+  width: 30px; height: 40px; background: #fffdf7; border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,.5), inset 0 0 0 1px #d8d0bd;
+  display: flex; align-items: center; justify-content: center;
+  color: #0f3d2e; font-weight: 700; font-size: 16px;
+}
+.topbar h1 { font-size: 16px; margin: 0; letter-spacing: .5px; font-weight: 700; color: #f6e9c7; }
+.topbar .video-link {
+  font-size: 11px; color: #b9f3d0; text-decoration: none; border: 1px solid #3a6b55;
+  padding: 6px 10px; border-radius: 20px; background: rgba(255,255,255,.04);
+}
+.topbar .video-link:active { background: rgba(255,255,255,.12); }
+
+main { flex: 1; padding: 0 16px 24px; display: flex; flex-direction: column; }
+
+/* ---------- Home / level list ---------- */
+.hero {
+  background: linear-gradient(135deg, #15493a, #0c2b22);
+  border-radius: 18px; padding: 16px 18px; margin: 6px 0 18px;
+  border: 1px solid #2e5c48;
+  box-shadow: 0 6px 18px rgba(0,0,0,.35);
+}
+.hero h2 { margin: 0 0 6px; font-size: 18px; color: #ffe9a8; }
+.hero p { margin: 0; font-size: 13px; line-height: 1.6; color: #d9ead9; }
+.hero .total-progress { margin-top: 12px; }
+
+.level-list { display: flex; flex-direction: column; gap: 12px; }
+.level-card {
+  display: flex; align-items: center; gap: 14px;
+  background: #0f3326; border: 1px solid #2c5744; border-radius: 16px;
+  padding: 14px; position: relative; overflow: hidden;
+  transition: transform .12s ease;
+}
+.level-card.locked { opacity: .5; }
+.level-card:active:not(.locked) { transform: scale(0.98); }
+.level-card .num {
+  width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+  background: linear-gradient(145deg,#d6c48a,#9c8a4d); color: #1c2a1f;
+  display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.25);
+}
+.level-card.locked .num { background: #3a4a42; color: #8aa093; }
+.level-card .info { flex: 1; min-width: 0; }
+.level-card .info .lt { font-size: 15px; font-weight: 700; color: #f6f1e3; }
+.level-card .info .ls { font-size: 12px; color: #9fc4ae; margin-top: 2px; }
+.level-card .badge {
+  font-size: 11px; padding: 3px 9px; border-radius: 10px; font-weight: 700;
+  background: #1c4433; color: #8fe8b4; border: 1px solid #2c6b4e; white-space: nowrap;
+}
+.level-card .badge.cleared { background: #2c6b4e; color: #e9fff1; }
+.level-card .lock-icon { font-size: 18px; color: #7c9088; }
+
+/* ---------- Level intro ---------- */
+.rule-box {
+  background: #0f3326; border: 1px solid #2c5744; border-radius: 16px;
+  padding: 16px; margin-bottom: 18px;
+}
+.rule-box h3 { margin: 0 0 8px; color: #ffe9a8; font-size: 16px; }
+.rule-box p { margin: 0; font-size: 13.5px; line-height: 1.75; color: #e4ece4; }
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: block; width: 100%; text-align: center; border: none; cursor: pointer;
+  padding: 15px; border-radius: 14px; font-size: 16px; font-weight: 700;
+  background: linear-gradient(145deg,#d6c48a,#b89f5d); color: #16251c;
+  box-shadow: 0 4px 10px rgba(0,0,0,.35);
+}
+.btn:active { transform: translateY(1px); }
+.btn.secondary {
+  background: transparent; color: #cfe8d8; border: 1px solid #3f6f58;
+  box-shadow: none; font-weight: 600;
+}
+.btn.ghost { background: transparent; color: #9fc4ae; border: none; box-shadow: none; font-weight: 600; font-size: 14px; padding: 10px; }
+
+/* ---------- Progress bar ---------- */
+.progress-wrap { display: flex; align-items: center; gap: 8px; margin: 6px 0 2px; }
+.progress-bar { flex: 1; height: 8px; border-radius: 6px; background: #163024; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg,#8fe8b4,#d6c48a); border-radius: 6px; transition: width .25s ease; }
+.progress-label { font-size: 12px; color: #bcd9c7; min-width: 44px; text-align: right; }
+
+/* ---------- Question screen ---------- */
+.q-header { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 10px; }
+.q-header .lv-name { font-size: 13px; color: #9fc4ae; font-weight: 700; }
+.q-header .q-count { font-size: 13px; color: #ffe9a8; font-weight: 700; }
+
+.context-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.chip {
+  font-size: 11.5px; background: rgba(255,255,255,.06); color: #cfe8d8;
+  border: 1px solid rgba(255,255,255,.12); padding: 4px 10px; border-radius: 20px;
+}
+
+.table-felt {
+  background: radial-gradient(ellipse at center, #1b5c45, #0e3627);
+  border: 1px solid #2c5744; border-radius: 16px; padding: 16px 10px;
+  margin-bottom: 14px; box-shadow: inset 0 2px 10px rgba(0,0,0,.35);
+}
+.hand-row {
+  display: flex; flex-wrap: wrap; gap: 4px; justify-content: center;
+}
+.tile {
+  width: 30px; height: 42px; background: #fffdf7; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 800; position: relative;
+  box-shadow: 0 2px 0 #c9c2ad, 0 3px 5px rgba(0,0,0,.4);
+  border: 1px solid #e3dcc8; flex-shrink: 0;
+}
+.tile.m { color: #c0392b; }
+.tile.p { color: #1f5fa8; }
+.tile.s { color: #1e7e42; }
+.tile.z { color: #2b2b2b; }
+.tile .suit-mark { position: absolute; bottom: 2px; font-size: 8px; opacity: .6; }
+.tile.haku { color: transparent; }
+.tile.haku::after {
+  content: ""; position: absolute; inset: 4px; border: 2px solid #1f5fa8; border-radius: 2px;
+}
+.tile.chun { color: #c0392b; }
+.tile.hatsu { color: #1e7e42; }
+
+.prompt-box {
+  background: #142e24; border-left: 4px solid #d6c48a; border-radius: 10px;
+  padding: 14px 14px; margin-bottom: 16px;
+}
+.prompt-box p { margin: 0; font-size: 15.5px; line-height: 1.6; font-weight: 600; color: #fbf6e6; }
+
+.options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+.option-btn {
+  text-align: left; background: #123528; border: 1.5px solid #2c5744; color: #f1f5f1;
+  border-radius: 12px; padding: 13px 14px; font-size: 14.5px; line-height: 1.5;
+  cursor: pointer; display: flex; gap: 10px; align-items: flex-start;
+}
+.option-btn .letter {
+  flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: #2c5744;
+  display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #d6f0e0;
+}
+.option-btn:active { background: #194838; }
+.option-btn.correct { background: #1f5c3a; border-color: #4caf7d; }
+.option-btn.correct .letter { background: #4caf7d; color: #0a2a20; }
+.option-btn.wrong { background: #5c2424; border-color: #c0392b; }
+.option-btn.wrong .letter { background: #c0392b; color: #fff; }
+.option-btn.disabled { pointer-events: none; }
+.option-btn.dim { opacity: .5; }
+
+.feedback {
+  border-radius: 12px; padding: 14px; margin: 4px 0 16px; font-size: 13.5px; line-height: 1.7;
+  display: none;
+}
+.feedback.show { display: block; }
+.feedback.ok { background: #16422c; border: 1px solid #4caf7d; color: #d8f5e4; }
+.feedback.ng { background: #4a1f1f; border: 1px solid #c0392b; color: #fbdede; }
+.feedback .fb-title { font-weight: 800; font-size: 14px; margin-bottom: 6px; }
+
+.bottom-bar { margin-top: auto; padding-top: 8px; }
+
+/* ---------- Result screen ---------- */
+.result-card {
+  text-align: center; background: #0f3326; border: 1px solid #2c5744; border-radius: 18px;
+  padding: 28px 20px; margin-bottom: 18px;
+}
+.result-card .score-circle {
+  width: 128px; height: 128px; border-radius: 50%; margin: 0 auto 14px;
+  display: flex; align-items: center; justify-content: center; flex-direction: column;
+  background: conic-gradient(var(--c, #4caf7d) calc(var(--p,0) * 1%), #163024 0);
+  position: relative;
+}
+.result-card .score-circle::before {
+  content: ""; position: absolute; inset: 10px; background: #0f3326; border-radius: 50%;
+}
+.result-card .score-circle .num { position: relative; font-size: 30px; font-weight: 800; color: #ffe9a8; }
+.result-card .score-circle .den { position: relative; font-size: 12px; color: #bcd9c7; }
+.result-card h2 { margin: 0 0 6px; font-size: 20px; }
+.result-card.pass h2 { color: #8fe8b4; }
+.result-card.fail h2 { color: #ffb199; }
+.result-card p { font-size: 13px; color: #cfe8d8; margin: 0; }
+
+.review-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.review-item {
+  display: flex; gap: 10px; align-items: flex-start; background: #0f3326;
+  border: 1px solid #2c5744; border-radius: 10px; padding: 10px 12px; font-size: 12.5px; color: #dcebe1;
+}
+.review-item .mark { font-size: 16px; }
+.review-item.wrong { border-color: #6b3030; background: #2a1414; }
+
+footer.copyright { text-align: center; font-size: 11px; color: #5e7a6c; padding: 10px 0 18px; }
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* =========================================================
+   省エネ麻雀道場 - 問題データ
+   出典: 麻雀Jewelチャンネル「麻雀の新常識【弱者が最短で強者に化ける方法】
+          -省エネ麻雀- 解説編」(武井雄哉 解説) の内容整理に基づく練習問題
+   ========================================================= */
+
+const PASS_RATE = 0.8; // 次のレベルに進むための正答率
+
+const LEVELS = [
+  {
+    id: 1,
+    title: "配牌の方針",
+    subtitle: "狙う役を4つから選ぶ",
+    rule: "役牌が対子→役牌／19字牌を含む面子が無い→タンヤオ／字牌が2種以上対子(または1種対子+同色数牌6枚程度)→ホンイツ／それ以外はすべてリーチ(標準進行)。トイトイ・七対子は原則狙わない。そして配牌は絶対に降りない――アガリに向かうことこそ最大の守備。",
+    questions: [
+      {
+        hand: ["中","中","2m","4m","6m","7p","8p","3s","5s","7s","北","南","9s"],
+        context: ["配牌直後", "役牌(中)が対子"],
+        prompt: "この配牌、まず目指すべき役は？",
+        options: [
+          { t: "役牌", c: true },
+          { t: "タンヤオ", c: false },
+          { t: "ホンイツ", c: false },
+          { t: "リーチ(標準進行)", c: false },
+        ],
+        explain: "役牌が対子になっている場合は、まずその役牌を狙うのが省エネ麻雀の基準です。",
+      },
+      {
+        hand: ["3m","4m","5m","6p","7p","8p","2s","3s","4s","5s","6s","7s","8s"],
+        context: ["配牌直後", "19牌・字牌を含む面子が無い", "染め要素なし"],
+        prompt: "この配牌、まず目指すべき役は？",
+        options: [
+          { t: "役牌", c: false },
+          { t: "タンヤオ", c: true },
+          { t: "ホンイツ", c: false },
+          { t: "リーチ(標準進行)", c: false },
+        ],
+        explain: "19字牌を含む面子が無い配牌は、タンヤオを狙うのが基準です。",
+      },
+      {
+        hand: ["東","東","發","發","2s","3s","4s","5s","6s","7s","8s","9s","南"],
+        context: ["配牌直後", "字牌が2種類(東・發)で対子"],
+        prompt: "この配牌、まず目指すべき役は？",
+        options: [
+          { t: "役牌(東を本命に)", c: false },
+          { t: "タンヤオ", c: false },
+          { t: "ホンイツ", c: true },
+          { t: "リーチ(標準進行)", c: false },
+        ],
+        explain: "字牌が2種以上対子になっている場合はホンイツを狙うのが基準です。",
+      },
+      {
+        hand: ["1m","2m","3m","2m","5m","6m","4p","5p","6p","7s","8s","9s","東"],
+        context: ["配牌直後", "役牌の対子なし", "染め要素なし", "19字牌を含む面子(123m・789s)あり"],
+        prompt: "この配牌、まず目指すべき役は？",
+        options: [
+          { t: "役牌", c: false },
+          { t: "タンヤオ", c: false },
+          { t: "ホンイツ", c: false },
+          { t: "リーチ(標準進行)", c: true },
+        ],
+        explain: "役牌対子・染め・タンヤオ条件のいずれにも当てはまらない配牌は、標準進行＝リーチを目指します。",
+      },
+      {
+        hand: ["2m","2m","5p","5p","7p","7p","3s","3s","6s","6s","東","東","9p"],
+        context: ["配牌直後", "対子だらけでトイトイが見えそうな形"],
+        prompt: "この配牌の扱いとして正しいのは？",
+        options: [
+          { t: "トイトイを積極的に狙う", c: false },
+          { t: "トイトイは原則存在しない役として忘れ、他の4役の基準で考え直す", c: true },
+          { t: "七対子に切り替える", c: false },
+          { t: "配牌が悪いので守備に回る", c: false },
+        ],
+        explain: "省エネ麻雀ではトイトイも七対子も「原則存在しない役」として扱い、忘れます。対子はあくまで役牌・ホンイツ判定の材料として見ます。",
+      },
+      {
+        hand: ["白","白","3m","4m","5m","6p","7p","8p","2s","3s","4s","5s","7s"],
+        context: ["配牌直後", "役牌(白)が対子", "同時に19字牌を含む面子も無い(タンヤオ条件も満たす)"],
+        prompt: "役牌対子とタンヤオ条件の両方を満たしている。どちらを優先する？",
+        options: [
+          { t: "役牌を優先する", c: true },
+          { t: "タンヤオを優先する", c: false },
+          { t: "両方同時に狙うので判断は不要", c: false },
+          { t: "ホンイツに変更する", c: false },
+        ],
+        explain: "判定の優先順位は「役牌対子→タンヤオ→ホンイツ→リーチ」。複数条件を満たす場合は役牌が最優先です。",
+      },
+      {
+        hand: ["1m","3m","1p","3p","7s","9s","2m","4m","6p","8p","東","南","西"],
+        context: ["配牌直後", "ペンチャン・カンチャンだらけ", "ドラなし", "形が非常に悪い"],
+        prompt: "配牌が非常に悪い。省エネ麻雀としてどう考えるべき？",
+        options: [
+          { t: "配牌が悪いので守備に回る(降りる)", c: false },
+          { t: "悪くても基本通りアガリに向かう(牌効率優先で進める)", c: true },
+          { t: "七対子に狙いを変える", c: false },
+          { t: "様子を見てから決める", c: false },
+        ],
+        explain: "配牌を見て降りるという選択肢はこの戦術にはありません。アガリに向かうことが最大の守備であり、平均的な相手なら有効牌を数枚引くだけで手は化けます。",
+      },
+      {
+        hand: ["發","發","2s","3s","4s","5s","6s","7s","1m","9m","東","南","西"],
+        context: ["配牌直後", "字牌は發のみ対子", "同色(索子)の数牌が6枚程度集まっている"],
+        prompt: "この配牌、まず目指すべき役は？",
+        options: [
+          { t: "役牌", c: false },
+          { t: "タンヤオ", c: false },
+          { t: "ホンイツ", c: true },
+          { t: "リーチ(標準進行)", c: false },
+        ],
+        explain: "字牌が1種対子で、同じ色の数牌が6枚程度集まっている場合もホンイツ判定の条件に合致します。",
+      },
+    ],
+  },
+
+  {
+    id: 2,
+    title: "序盤の切り順",
+    subtitle: "オタ風→19牌→役牌→孤立28→ペンチャンの固定順",
+    rule: "第一打はホンイツを見る場合を除きオタ風(客風)。以降は19牌→役牌→孤立28牌→ペンチャンの順で払う。字牌同士は、場に切れている枚数が多い方(重なりにくい方)から切り、攻撃力が同じなら守備力(放銃時に翻がつかない方)が高い方を残す。14・69筋の19牌はオタ風より先に切り、1-5の関係にある孤立1はオタ風より強い。親番は東を残し先に見えている役牌から切る。",
+    questions: [
+      {
+        hand: ["南","1m","4m","7m","2p","5p","8p","3s","6s","9s","白","發","中"],
+        context: ["配牌直後", "タンヤオでもホンイツでもない普通の配牌"],
+        prompt: "第一打として最も適切なのは？",
+        options: [
+          { t: "客風(南)", c: true },
+          { t: "19牌", c: false },
+          { t: "役牌(白)", c: false },
+          { t: "孤立の28牌", c: false },
+        ],
+        explain: "ホンイツを見ない通常の配牌では、第一打は客風(オタ風)から切るのが固定ルールです。",
+      },
+      {
+        hand: ["南","發","發","2s","3s","4s","5s","6s","7s","9s","4p","白","東"],
+        context: ["配牌直後", "ホンイツ(索子)を狙う方針が確定"],
+        prompt: "ホンイツを目指す場合の序盤の切り順として正しいのは？",
+        options: [
+          { t: "いつも通りまず客風(南)から切る", c: false },
+          { t: "客風は様子見して、染まらない色のペンチャンや孤立28牌から切る", c: true },
+          { t: "役牌(發)から切る", c: false },
+          { t: "19牌から切る", c: false },
+        ],
+        explain: "ホンイツを見ている時は、客風を先に切らず、染まらない色の牌(この場合4pなど)から処理します。",
+      },
+      {
+        hand: ["南","1m","4m","3p","5p","7p","2s","5s","8s","白","發","中","9m"],
+        context: ["配牌直後", "客風の南と、1-4筋の孤立1萬を持っている"],
+        prompt: "南と1萬、先に切るべきはどちら？",
+        options: [
+          { t: "南(客風)から切る", c: false },
+          { t: "1萬(14筋の19牌)から切る", c: true },
+          { t: "どちらでもよい", c: false },
+          { t: "ドラ次第で決める", c: false },
+        ],
+        explain: "14・69の筋で持っている19牌は、対子になった時の受け入れ枚数がオタ風と同じなのに守備力だけが低いため、オタ風より先に切ります。",
+      },
+      {
+        hand: ["1m","5m","南","3p","6p","8p","2s","4s","7s","9s","發","中","白"],
+        context: ["孤立の1萬と5萬を両方持っている(1-5の関係)"],
+        prompt: "この1萬の価値評価として正しいのは？",
+        options: [
+          { t: "他の孤立19牌と同じ価値", c: false },
+          { t: "他の孤立19牌より強い(オタ風より優先して残すが役牌ほどではない)", c: true },
+          { t: "オタ風より弱い", c: false },
+          { t: "即切るべき牌", c: false },
+        ],
+        explain: "1-5の関係で持っている1は、他の孤立19牌より価値が高く、オタ風より優先して残します(ただし役牌ほどの価値ではありません)。",
+      },
+      {
+        hand: ["東","南","3m","5m","7m","2p","4p","6p","8s","9s","發","中","白"],
+        context: ["場に東が1枚切れ、南は0枚切れ", "他の条件(枚数など)は同じ"],
+        prompt: "東と南、どちらを先に切るべき？",
+        options: [
+          { t: "東から切る(切れている枚数が多い方=重なりにくい方から切る)", c: true },
+          { t: "南から切る", c: false },
+          { t: "両方同時に残す", c: false },
+          { t: "ドラ次第で決める", c: false },
+        ],
+        explain: "字牌は場に切れている枚数が多い方、つまり自分で重ねにくい方から先に切ります。",
+      },
+      {
+        hand: ["中","西","2m","4m","6m","8p","2p","5s","7s","9s","發","白","南"],
+        context: ["攻撃力(残り枚数・重なりやすさ)が同じ客風が2種類ある", "中は放銃すると翻がつき、西は翻がつかない"],
+        prompt: "攻撃力が同じなら、どちらを残すべき？",
+        options: [
+          { t: "自風に近い方", c: false },
+          { t: "放銃時に翻がつかない方(守備力が高い方)", c: true },
+          { t: "数字が若い方", c: false },
+          { t: "先に引いた方", c: false },
+        ],
+        explain: "攻撃力(対子になりやすさ)が同じ場合は、守備力の高い方＝放銃しても翻がつかない方を残します。",
+      },
+      {
+        hand: ["西","西","2m","4m","6m","8p","1p","5s","7s","9s","發","白","南"],
+        context: ["場に西がすでに2枚切れている"],
+        prompt: "この西の価値評価として正しいのは？",
+        options: [
+          { t: "役牌と同等の価値がある", c: false },
+          { t: "オタ風と同じか、それ以下の価値まで落ちる", c: true },
+          { t: "19牌より価値が高い", c: false },
+          { t: "最後まで大事に残すべき牌になる", c: false },
+        ],
+        explain: "場に2枚切れた字牌は、対子になる見込みがほぼ無くなるため、オタ風と同等以下の価値まで落ちます。",
+      },
+      {
+        hand: ["東","白","3m","6m","9m","2p","5p","8p","3s","6s","9s","發","中"],
+        context: ["自分は親番", "場に白が1枚見えている", "浮いている数牌は他に無い"],
+        prompt: "最初に切るべきは？",
+        options: [
+          { t: "白を先に切る。浮いている数牌が無いので次に切るのは東になる", c: true },
+          { t: "東を先に切る", c: false },
+          { t: "白と東を同時に処理する", c: false },
+          { t: "ドラ表示牌を見てから決める", c: false },
+        ],
+        explain: "親のときは他の字牌より東を残し、1枚見えている白から切ります。浮いている数牌が無い場合、次に切るのは東になります。",
+      },
+    ],
+  },
+
+  {
+    id: 3,
+    title: "3〜7キープの鉄則",
+    subtitle: "良形ターツが確定するまで浮き牌を切らない",
+    rule: "孤立の28牌まで払い終えたら、5ブロックの良形ターツが確定するまで3〜7の浮き牌は切らない。代わりにペンチャン・カンチャンなど愚形搭子から払う。確定した瞬間、切り順は逆転し、危険度の高い牌から先に切る。確定前に安牌を抱えることはない。テンパイしたら3〜7を切ってよく、副露している(できる)1シャンテンなら愚形を固定したまま切ってよい。",
+    questions: [
+      {
+        hand: ["5m","6m","3p","5p","7p","2s","4s","7s","東","南","9m","8p","3s"],
+        context: ["孤立の28牌まで払い終えた段階", "まだ5ブロックの良形ターツが確定していない"],
+        prompt: "次に切るべきなのは？",
+        options: [
+          { t: "3〜7の浮き牌", c: false },
+          { t: "ペンチャン・カンチャンなど愚形搭子", c: true },
+          { t: "安牌を抱えて様子見", c: false },
+          { t: "ドラ", c: false },
+        ],
+        explain: "良形ターツが確定するまでは3〜7の浮き牌を温存し、ペンチャン・カンチャンなど愚形搭子の方から先に払います。",
+      },
+      {
+        hand: ["4m","5m","6m","2p","3p","8s","9s","1s","3s","7p","8p","中","發"],
+        context: ["このルールについて武井さん自身の評価"],
+        prompt: "武井さん自身はこのルールを「すごく____ルール」と表現している。空欄に入るのは？",
+        options: [
+          { t: "楽な", c: false },
+          { t: "キツい", c: true },
+          { t: "曖昧な", c: false },
+          { t: "古い", c: false },
+        ],
+        explain: "本人も「すごくキツいルール」と認めており、同時に「ここでつまずいている可能性が高い」とも語っています。",
+      },
+      {
+        hand: ["2m","3m","4m","5p","6p","3s","4s","7s","8s","9s","東","南","西"],
+        context: ["5ブロックの良形ターツがちょうど確定した瞬間"],
+        prompt: "確定した瞬間、切り順はどうなる？",
+        options: [
+          { t: "それまでと変わらず愚形から切り続ける", c: false },
+          { t: "危険度の高い牌から先に切るように逆転する", c: true },
+          { t: "安全牌だけを切るようになる", c: false },
+          { t: "ドラだけ残して他を切る", c: false },
+        ],
+        explain: "5ブロックの良形ターツが確定した瞬間、今度は危険度の高い牌から先に切るように切り順が逆転します。",
+      },
+      {
+        hand: ["3m","4m","5m","6p","7p","2s","4s","6s","8s","9s","白","發","中"],
+        context: ["1シャンテン", "まだ5ブロックの良形ターツが確定していない"],
+        prompt: "この段階で安牌を抱えて様子を見るべきか？",
+        options: [
+          { t: "抱えるべき(将来の放銃に備える)", c: false },
+          { t: "抱えない(確定前に安牌を持つことはない)", c: true },
+          { t: "状況次第で判断する", c: false },
+          { t: "常に1枚は抱える", c: false },
+        ],
+        explain: "5ブロックの良形ターツが確定していない1シャンテンの段階では、安牌を抱えることはありません。",
+      },
+      {
+        hand: ["2m","3m","7m","8m","4p","6p","2s","4s","6s","8s","東","南","西"],
+        context: ["ペンチャンを残し、3〜7の浮き牌を先に切らない方針"],
+        prompt: "なぜこの方が結果的に良いとされている？",
+        options: [
+          { t: "打点が上がるから", c: false },
+          { t: "結果的にアガリが早くなることが多いから", c: true },
+          { t: "役が確定しやすいから", c: false },
+          { t: "放銃率が下がるから", c: false },
+        ],
+        explain: "ペンチャンを残して不用意に3〜7を先に切ってしまうとアガれなくなるため、浮き牌を残す方が結果的に早いことが多くなります。",
+      },
+      {
+        hand: ["2m","3m","4m","5p","6p","7p","8s","9s","3s","5s","7s","東","南"],
+        context: ["テンパイに到達した"],
+        prompt: "テンパイ時の3〜7の浮き牌の扱いは？",
+        options: [
+          { t: "テンパイでも慎重に抱え続ける", c: false },
+          { t: "テンパイなら3〜7を切ってよい", c: true },
+          { t: "テンパイしても絶対に切らない", c: false },
+          { t: "役が無ければ切らない", c: false },
+        ],
+        explain: "テンパイに到達したら3〜7を切ってよいというのが、このキツいルールの抜け道の一つです。",
+      },
+      {
+        hand: ["3m","4m","5p","6p","2s","3s","7s","8s","東","東","南","西","北"],
+        context: ["副露している、または副露できる手牌の1シャンテン"],
+        prompt: "この場合、3〜7浮き牌の扱いは？",
+        options: [
+          { t: "愚形を固定したまま3〜7を切ってよい", c: true },
+          { t: "必ず愚形を解消してから切る", c: false },
+          { t: "絶対に切ってはいけない", c: false },
+          { t: "鳴ける場合は関係なくキープする", c: false },
+        ],
+        explain: "副露している、または副露できる手牌の1シャンテンなら、愚形を固定したまま3〜7を切ってよいとされています。",
+      },
+      {
+        hand: ["發","發","2s","3s","7s","8s","4m","6p","8p","1m","9p","東","南"],
+        context: ["役がほぼ確定していて鳴いて使える対子がある"],
+        prompt: "この対子はこのルール上どう扱ってよい？",
+        options: [
+          { t: "愚形として扱う", c: false },
+          { t: "良形として見てよい", c: true },
+          { t: "無視して数えない", c: false },
+          { t: "切ってはいけない牌として扱う", c: false },
+        ],
+        explain: "役がほぼ確定していて鳴いて使える対子は、良形として見てよいという例外扱いになります。",
+      },
+    ],
+  },
+
+  {
+    id: 4,
+    title: "格下げルール",
+    subtitle: "見えている枚数で浮き牌を切れるようにする",
+    rule: "ある数字が場に3枚以上見えている(自分が切った分を含む)場合、隣の数字を1つ内側の格として扱ってよい。例：1が3枚見え→2は1として扱い切れる。5が3枚見え→3や7は2や8として扱える。牌は1種につき4枚、3枚見えたら「もう無いもの」として扱う。",
+    questions: [
+      {
+        hand: ["1m","2m","3m","4p","6p","8p","2s","5s","7s","9s","東","南","白"],
+        context: ["場にすでに1萬が3枚見えている(自分が切った1枚を含む)"],
+        prompt: "この時、2萬の扱いはどうなる？",
+        options: [
+          { t: "通常通り2萬として扱う(3〜7ルールには関係ない)", c: false },
+          { t: "1萬格落ちとして扱い、2萬を切ってよくなる", c: true },
+          { t: "逆に大事に残すべき牌になる", c: false },
+          { t: "ルールに影響はない", c: false },
+        ],
+        explain: "ある数字が場に3枚以上見えている場合、隣の数字を1つ内側の格として扱ってよく、切れるようになります。",
+      },
+      {
+        hand: ["1m","3m","2p","4p","6p","2s","5s","8s","東","南","西","白","發"],
+        context: ["1萬が場に3枚見えている状況"],
+        prompt: "本来切れなかった3萬はどうなる？",
+        options: [
+          { t: "変わらず切れない", c: false },
+          { t: "2格落ち扱いとなり、切れるようになる", c: true },
+          { t: "むしろ重要度が上がる", c: false },
+          { t: "ホンイツ時のみ切れる", c: false },
+        ],
+        explain: "1が3枚見えている場合、3は2格落ちとして扱われ、切れるようになります。",
+      },
+      {
+        hand: ["5m","3m","7m","2p","4p","6p","2s","5s","8s","東","南","白","發"],
+        context: ["5萬が場に3枚見えている状況"],
+        prompt: "この時、3萬や7萬はどう扱われる？",
+        options: [
+          { t: "通常通り大事に残す", c: false },
+          { t: "2や8として扱い、切ってよくなる", c: true },
+          { t: "5萬のみに影響し3萬7萬には影響なし", c: false },
+          { t: "ホンイツ中のみ適用される", c: false },
+        ],
+        explain: "5が3枚見えている場合、3や7はそれぞれ2や8として扱われ、切ってよくなります。",
+      },
+      {
+        hand: ["3m","5m","6m","2p","4p","7p","2s","5s","8s","東","南","白","發"],
+        context: ["356の形で、3に4がくっついて二度受けになっている", "格下げの条件は満たしている"],
+        prompt: "この3萬の扱いは？",
+        options: [
+          { t: "二度受けなので絶対に残すべき", c: false },
+          { t: "条件(見えている枚数)を満たせば切ってよい", c: true },
+          { t: "常に切ってはいけない牌", c: false },
+          { t: "役牌同様に大切に扱う", c: false },
+        ],
+        explain: "356や367の形で二度受けになっている3でも、格下げの条件を満たしていれば切ってよいとされています。",
+      },
+      {
+        hand: ["2m","4m","6p","8p","3s","5s","7s","東","南","西","北","白","發"],
+        context: ["格下げルールの基本確認"],
+        prompt: "牌は1種につき何枚あり、何枚見えたら「もう無いもの」として扱ってよい？",
+        options: [
+          { t: "3枚 / 2枚", c: false },
+          { t: "4枚 / 3枚", c: true },
+          { t: "4枚 / 2枚", c: false },
+          { t: "5枚 / 3枚", c: false },
+        ],
+        explain: "牌は1種につき4枚存在し、3枚見えたら「もう無いもの」として扱うのが格下げルールの基準です。",
+      },
+      {
+        hand: ["1m","3m","5p","7p","2s","4s","6s","8s","東","南","西","白","發"],
+        context: ["格下げルールで数える対象を確認"],
+        prompt: "格下げルールを使うとき、数える対象は何？",
+        options: [
+          { t: "相手の手出しツモ切りの傾向", c: false },
+          { t: "場(捨て牌や副露)に見えている枚数", c: true },
+          { t: "自分の運の良さ", c: false },
+          { t: "ドラ表示牌の種類", c: false },
+        ],
+        explain: "格下げルールは「見えている牌を数えるだけ」というのが肝で、場に見えている枚数のみを数えます。",
+      },
+      {
+        hand: ["1m","3m","5p","7p","2s","4s","6s","8s","東","南","西","白","發"],
+        context: ["1萬が2枚しか見えていない(自分が切った分を含めても2枚)"],
+        prompt: "この状況で2萬を切ってよいか？",
+        options: [
+          { t: "切ってよい(2枚見えで十分)", c: false },
+          { t: "まだ切れない(3枚見えが条件)", c: true },
+          { t: "ホンイツなら切れる", c: false },
+          { t: "リーチ後なら切れる", c: false },
+        ],
+        explain: "格下げの条件は「3枚以上見えている」ことです。2枚ではまだ条件を満たしません。",
+      },
+    ],
+  },
+
+  {
+    id: 5,
+    title: "鳴き判断",
+    subtitle: "1シャンテン・2シャンテンでの鳴きの基準",
+    rule: "1シャンテン：面前から鳴く時、良形から鳴いて愚形を残すことはしない。愚形+愚形→どちらからも鳴く。愚形+良形→愚形から鳴く。良形+良形→どちらからも鳴く(ただしタンピン形は鳴かずリーチを目指す。鳴いて満貫か、受け4種中1種が3枚見えているなら鳴く)。2シャンテン：ターツが足りていれば愚形から鳴く(頭が消える鳴きはしない)。ホンイツなら1枚目から全部鳴いてよい(テンパイしなくてもよい)。",
+    questions: [
+      {
+        hand: ["發","發","2m","3m","7p","9p","2s","4s","6s","8s","東","南","西"],
+        context: ["1シャンテン", "愚形ターツと良形ターツの両方に鳴ける牌が出た"],
+        prompt: "どちらから鳴くべき？",
+        options: [
+          { t: "良形から鳴いて愚形を残す", c: false },
+          { t: "愚形から鳴く", c: true },
+          { t: "どちらも鳴かない", c: false },
+          { t: "役の有無で決める", c: false },
+        ],
+        explain: "面前から鳴く時は、良形から鳴いて愚形を残すということはしません。必ず愚形側から鳴きます。",
+      },
+      {
+        hand: ["發","發","1m","3m","7p","9p","2s","5s","9s","東","南","西","北"],
+        context: ["1シャンテン", "愚形ターツが2つある"],
+        prompt: "鳴ける牌が出たらどうする？",
+        options: [
+          { t: "どちらからも鳴いてよい(役・打点に関係なく)", c: true },
+          { t: "鳴かない方がよい", c: false },
+          { t: "片方だけ鳴く", c: false },
+          { t: "役牌が絡む方のみ鳴く", c: false },
+        ],
+        explain: "愚形と愚形の組み合わせでは、役や打点に関係なくどちらからも鳴いてよいとされています。",
+      },
+      {
+        hand: ["發","發","3m","4m","6p","7p","2s","3s","8s","9s","東","南","西"],
+        context: ["1シャンテン", "良形ターツが2つある"],
+        prompt: "鳴ける牌が出たらどうする？",
+        options: [
+          { t: "どちらからも鳴いてよい", c: true },
+          { t: "絶対に鳴かない", c: false },
+          { t: "愚形になるまで待つ", c: false },
+          { t: "リーチ可能な場合のみ鳴く", c: false },
+        ],
+        explain: "良形と良形の組み合わせでは、基本的にどちらからも鳴いてよいとされています(タンピン形は例外)。",
+      },
+      {
+        hand: ["3m","4m","5m","6p","7p","2s","3s","4s","5s","6s","7s","8p","9p"],
+        context: ["タンヤオ・ピンフ(タンピン)形の良形1シャンテン", "鳴ける牌が出た"],
+        prompt: "基本方針として正しいのは？",
+        options: [
+          { t: "即座に鳴く", c: false },
+          { t: "鳴かずにタンピン形のリーチを目指す(鳴いて満貫あるか、受け4種中1種が3枚見えていれば鳴く)", c: true },
+          { t: "絶対に鳴いてはいけない", c: false },
+          { t: "ホンイツに切り替える", c: false },
+        ],
+        explain: "タンピン形は例外で、基本は鳴かずにリーチを目指します。ただし鳴いて満貫になる場合や、受け入れの1種が3枚見えている場合は鳴きます。",
+      },
+      {
+        hand: ["發","發","1m","3m","7p","9p","2s","4s","東","南","西","北","白"],
+        context: ["2シャンテン", "すでにターツが足りている状態"],
+        prompt: "鳴ける牌が出た。どちらから鳴くべき？",
+        options: [
+          { t: "良形から鳴く", c: false },
+          { t: "愚形から鳴く(ただし頭が消える鳴きはしない)", c: true },
+          { t: "鳴かない", c: false },
+          { t: "役牌のみ鳴く", c: false },
+        ],
+        explain: "2シャンテンでターツが足りている場合も愚形から鳴きますが、頭が消えてしまう鳴き方はしません。",
+      },
+      {
+        hand: ["發","發","2s","3s","4s","5s","6s","7s","8s","9s","1m","9p","東"],
+        context: ["ホンイツを目指している", "鳴ける牌が出た"],
+        prompt: "対応として正しいのは？",
+        options: [
+          { t: "テンパイが見えてから鳴く", c: false },
+          { t: "1枚目から全部鳴いてよい(テンパイしなくてもよい)", c: true },
+          { t: "役牌がらみのみ鳴く", c: false },
+          { t: "鳴かずに面前を目指す", c: false },
+        ],
+        explain: "ホンイツを目指している場合は、1枚目から全部鳴いてよく、バレても3副露してノーテンでもよいとされています。",
+      },
+      {
+        hand: ["中","中","2m","4m","6p","8p","3s","5s","東","南","西","北","白"],
+        context: ["役牌(中)が対子", "カンチャンからも鳴けるかどうかが論点"],
+        prompt: "役牌のほかにカンチャンからも鳴ける条件は？",
+        options: [
+          { t: "常にカンチャンから鳴ける", c: false },
+          { t: "役牌の他にもう1つ頭があることが条件(役牌が頭になる形ではカンチャンから鳴けない)", c: true },
+          { t: "役牌が3枚以上見えている時のみ", c: false },
+          { t: "カンチャンからは絶対に鳴けない", c: false },
+        ],
+        explain: "役牌が対子なら全部鳴いてよいですが、カンチャンから鳴くには役牌の他にもう1つ頭があることが条件です。役牌自体が頭になる形ではカンチャンから鳴けません。",
+      },
+    ],
+  },
+
+  {
+    id: 6,
+    title: "リーチ判断",
+    subtitle: "ダマにするか、即リーチか",
+    rule: "満貫以上確定の両面以上で役ありならダマ(アガリ率が跳ね上がる)。ただし5巡目以内はリーチ。役あり愚形は、両面への手変わりが2種類以上あるならダマでもよい。三色・一通が確定している愚形はリーチ。愚形のみのリーチでも、待ちが1・9・字牌ならリーチ(シャンポンで片方が1・9・字牌の場合も同様)。",
+    questions: [
+      {
+        hand: ["2m","3m","4m","5p","6p","7p","2s","3s","4s","6s","7s","8s","9s"],
+        context: ["満貫以上確定・役ありの両面待ちでテンパイ", "巡目は10巡目"],
+        prompt: "リーチかダマか？",
+        options: [
+          { t: "リーチ", c: false },
+          { t: "ダマ(アガリ率が跳ね上がるため)", c: true },
+          { t: "どちらでもよい", c: false },
+          { t: "役の種類による", c: false },
+        ],
+        explain: "満貫以上が確定していて役ありの両面待ちなら、基本はダマにしてアガリ率を上げます。",
+      },
+      {
+        hand: ["2m","3m","4m","5p","6p","7p","2s","3s","4s","6s","7s","8s","9s"],
+        context: ["満貫以上確定・役ありの両面待ちでテンパイ", "巡目は4巡目(5巡目以内)"],
+        prompt: "リーチかダマか？",
+        options: [
+          { t: "リーチ(早いリーチは相手に押すか降りるかをその場で迫れる)", c: true },
+          { t: "ダマ", c: false },
+          { t: "様子を見てから決める", c: false },
+          { t: "愚形なら関係ない", c: false },
+        ],
+        explain: "5巡目以内の早い段階であれば、満貫以上確定でもリーチを選びます。早いリーチは相手に押すか降りるかをその場で迫れるからです。",
+      },
+      {
+        hand: ["發","發","2m","4m","3p","5p","6s","7s","8s","1s","9s","東","南"],
+        context: ["役ありの愚形(カンチャンなど)でテンパイ", "両面への手変わりが2種類以上ある"],
+        prompt: "リーチかダマか？",
+        options: [
+          { t: "必ずリーチ", c: false },
+          { t: "ダマでもよい", c: true },
+          { t: "必ずダマ", c: false },
+          { t: "愚形は常にリーチ一択", c: false },
+        ],
+        explain: "役あり愚形でも、両面への手変わりが2種類以上あるならダマでもよいとされています。",
+      },
+      {
+        hand: ["2m","3m","4m","5p","6p","7p","3s","4s","2s","6s","7s","8s","9s"],
+        context: ["三色同順(または一気通貫)が確定している愚形でテンパイ"],
+        prompt: "リーチかダマか？",
+        options: [
+          { t: "ダマ(手変わりを待つ)", c: false },
+          { t: "リーチ(手変わりするとその役が崩れるため、打点を上げつつ足止めする)", c: true },
+          { t: "即オリる", c: false },
+          { t: "役が確定しているので関係ない", c: false },
+        ],
+        explain: "三色や一通が確定している愚形は、手変わりでその役が崩れてしまうため、打点を上げつつ足止めできるリーチを選びます。",
+      },
+      {
+        hand: ["發","發","2m","4m","6p","8p","3s","5s","1m","東","南","西","北"],
+        context: ["役なし(リーチのみ)の愚形テンパイ", "待ちが1萬(数牌の1)"],
+        prompt: "リーチすべきか？",
+        options: [
+          { t: "愚形なのでダマに徹する", c: false },
+          { t: "リーチする(愚形のみのリーチでも待ちが1・9・字牌ならリーチ)", c: true },
+          { t: "テンパイを取らない", c: false },
+          { t: "役が無いのでそもそもリーチ不可", c: false },
+        ],
+        explain: "愚形のみ(役なし)のリーチでも、待ちが1・9・字牌であればリーチするのが基準です。",
+      },
+      {
+        hand: ["中","中","2m","4m","6p","8p","3s","5s","7s","東","南","西","北"],
+        context: ["シャンポン待ちで、片方が役牌の中"],
+        prompt: "役なしの愚形リーチとしてどう判断する？",
+        options: [
+          { t: "ダマが基本", c: false },
+          { t: "リーチでよい(1・9・字牌のシャンポンも同様に扱う)", c: true },
+          { t: "テンパイを取らずに降りる", c: false },
+          { t: "役が無いので鳴く", c: false },
+        ],
+        explain: "シャンポン待ちで片方が1・9・字牌の場合も、愚形のみのリーチと同様にリーチしてよいとされています。",
+      },
+      {
+        hand: ["發","發","2m","4m","3p","5p","6s","7s","8s","1s","9s","東","南"],
+        context: ["役あり愚形でテンパイ", "両面への手変わりの種類が1種類しかない"],
+        prompt: "リーチかダマか？",
+        options: [
+          { t: "ダマでよい(2種以上という条件を満たさないため)", c: false },
+          { t: "リーチが基本(手変わりの種類が少ないなら、打点と速度を取ってリーチする)", c: true },
+          { t: "必ずオリる", c: false },
+          { t: "手変わりの種類は関係ない", c: false },
+        ],
+        explain: "ダマが許容されるのは「両面への手変わりが2種類以上」の場合です。手変わりが1種類しかないなら、速度と打点を取ってリーチが基本になります。",
+      },
+    ],
+  },
+
+  {
+    id: 7,
+    title: "押し引き・降り判断",
+    subtitle: "反応すべきは4つのサインだけ",
+    rule: "自分が2シャンテン以下で他家からテンパイサインが出たら、安牌が無くても降りる。反応すべきサインは4つだけ：①リーチ ②ホンイツ模様の人が染めている色を余らせて切った ③ドラポンを含む2副露 ④13巡目以降。これ以外は無視してよい。降りると決めたら押し返せる牌があってもスジ・ワンチャンスも切らない。2軒リーチには絶対に勝負せず現物から切る(無ければ現物がなくてもオリる)。13巡目を過ぎたら押し返しはほとんど考えない。警戒順はドラポン→リーチ→その他の副露、ヤミテンはケア不要。",
+    questions: [
+      {
+        hand: ["2m","4m","6p","8p","3s","5s","7s","東","南","西","北","白","發"],
+        context: ["自分は2シャンテン", "他家が1人リーチ", "安牌を持っていない"],
+        prompt: "どうする？",
+        options: [
+          { t: "安牌が無いので無理に押す", c: false },
+          { t: "安牌が無くても降りる", c: true },
+          { t: "一旦様子見で1枚だけ押す", c: false },
+          { t: "リーチ者を無視して自分の手を進める", c: false },
+        ],
+        explain: "自分が2シャンテン以下でテンパイサインが出たら、安牌が無くても降りるのが基準です。",
+      },
+      {
+        hand: ["2m","4m","6p","8p","3s","5s","7s","東","南","西","北","白","發"],
+        context: ["4つの反応サインのうち、どれに該当しないか確認する問題"],
+        prompt: "次のうち、省エネ麻雀で「反応すべき」とされていないものはどれ？",
+        options: [
+          { t: "リーチ", c: false },
+          { t: "ドラポンを含む2副露", c: false },
+          { t: "役牌のみの1副露(ドラなし)", c: true },
+          { t: "13巡目以降", c: false },
+        ],
+        explain: "反応すべき4サインは「リーチ／ホンイツ模様の人が染め色を余らせて切る／ドラポンを含む2副露／13巡目以降」。役牌のみでドラが絡まない1副露はこの4つに含まれないため無視してよいとされています。",
+      },
+      {
+        hand: ["2m","4m","6p","8p","3s","5s","7s","東","南","西","北","白","發"],
+        context: ["ホンイツ模様の人が、染めている色の牌を余らせて切った"],
+        prompt: "これは反応すべきサインに該当するか？",
+        options: [
+          { t: "該当しない(無視してよい)", c: false },
+          { t: "該当する(反応すべきサイン)", c: true },
+          { t: "ドラが絡む場合のみ該当する", c: false },
+          { t: "リーチ後のみ該当する", c: false },
+        ],
+        explain: "ホンイツ模様の人が染めている色を余らせて切るのは、反応すべき4サインの一つです。",
+      },
+      {
+        hand: ["2m","4m","6p","8p","3s","5s","7s","東","南","西","北","白","發"],
+        context: ["すでに降りると決めている", "押し返せそうなスジ・ワンチャンスの牌が手に入った"],
+        prompt: "この牌を切るべきか？",
+        options: [
+          { t: "押し返せるなら切ってよい", c: false },
+          { t: "切らない(例外を作らず現物を並べ続ける)", c: true },
+          { t: "一度だけなら切ってよい", c: false },
+          { t: "自分が1シャンテンなら切ってよい", c: false },
+        ],
+        explain: "降りると決めたら、押し返せそうな牌があってもスジ・ワンチャンスを含めて切りません。例外を作ると戦術の意味が無くなるためです。",
+      },
+      {
+        hand: ["2m","4m","6p","8p","3s","5s","7s","東","南","西","北","白","發"],
+        context: ["2軒リーチの状況", "何向聴かも数えていないほど間に合っていない手牌", "現物が手元にある"],
+        prompt: "どうする？",
+        options: [
+          { t: "無筋でも押してみる", c: false },
+          { t: "現物から絶対に切る(2軒リーチには絶対に勝負しない)", c: true },
+          { t: "スジを切る", c: false },
+          { t: "ワンチャンスを切る", c: false },
+        ],
+        explain: "2軒リーチには絶対に勝負せず、現物があるなら必ず現物から切ります。",
+      },
+      {
+        hand: ["2m","4m","6p","8p","3s","5s","7s","東","南","西","北","白","發"],
+        context: ["同じ2軒リーチの状況", "現物が手元に無い"],
+        prompt: "どうする？",
+        options: [
+          { t: "無筋を切って押す", c: false },
+          { t: "スジを切る", c: false },
+          { t: "現物が無くてもオリる", c: true },
+          { t: "ワンチャンスに賭ける", c: false },
+        ],
+        explain: "2軒リーチに対しては、現物が無くてもオリるというのが基準です。",
+      },
+      {
+        hand: ["2m","4m","6p","8p","3s","5s","7s","東","南","西","北","白","發"],
+        context: ["13巡目を過ぎた終盤", "手牌が押し返せそうな形になってきた"],
+        prompt: "どうすべき？",
+        options: [
+          { t: "押し返しを積極的に検討する", c: false },
+          { t: "押し返しはほとんど考えない(余計に考えるとそこから放銃する)", c: true },
+          { t: "スジなら押してよい", c: false },
+          { t: "ドラがあるなら押す", c: false },
+        ],
+        explain: "13巡目を過ぎたら押し返しはほとんど考えません。余計に考えるとそこから放銃するためです。",
+      },
+      {
+        hand: ["2m","4m","6p","8p","3s","5s","7s","東","南","西","北","白","發"],
+        context: ["複数の他家が気になる動きをしている", "警戒の優先順位を確認"],
+        prompt: "警戒する優先順位として正しいのは？",
+        options: [
+          { t: "その他の副露 → リーチ → ドラポン", c: false },
+          { t: "ドラポンを含む副露 → リーチ → その他の副露", c: true },
+          { t: "リーチ → ドラポン → その他の副露", c: false },
+          { t: "ヤミテンを最優先", c: false },
+        ],
+        explain: "ベタオリで警戒する順番は、ドラポン→リーチ→その他の副露の順です。門前でリーチもしていないヤミテンは基本的に無視してよいとされています。",
+      },
+    ],
+  },
+
+  {
+    id: 8,
+    title: "総合問題",
+    subtitle: "ラス回避補正も含めた最終チェック",
+    rule: "ネット麻雀のラス回避補正として、親への放銃はなるべく避けるが自分が和了れそうなら警戒しすぎない。自分がラス目のときは親を利用し(安手より親の高打点でラス回避)、自分がトップ目の親番は多少打点を意識する。ラスとの点差が「放銃してもセーフな打点」の目安になる。ラスさえ引かなければプラマイゼロで終われることが多い。ここまでの全ルールの総合確認。",
+    questions: [
+      {
+        hand: ["2m","4m","6p","8p","3s","5s","7s","東","南","西","北","白","發"],
+        context: ["現在ラス目(4着)", "自分の手は安い(1300点程度)", "親が高打点(12000点クラス)を和了しそうな気配"],
+        prompt: "どう考える？",
+        options: [
+          { t: "自分がどうにかして1300点でも和了りに行くべき", c: false },
+          { t: "無理に自分が和了るより、親に他家から高打点を和了ってもらう方がラス回避に近づく", c: true },
+          { t: "親を妨害する", c: false },
+          { t: "ベタオリする", c: false },
+        ],
+        explain: "自分がラス目のときは親を利用します。1300点を自分で和了るより、親が他家から12000点を和了ってくれた方がラス回避に近づきます。",
+      },
+      {
+        hand: ["2m","4m","6p","8p","3s","5s","7s","東","南","西","北","白","發"],
+        context: ["自分がトップ目で親番"],
+        prompt: "基本方針として正しいのは？",
+        options: [
+          { t: "とにかく速さ最優先でいつも通り打つ", c: false },
+          { t: "多少打点を意識する(テンパイ巡目を遅くしてもリーチや混一色を狙うなど)", c: true },
+          { t: "即座にオリる", c: false },
+          { t: "役牌のみを狙う", c: false },
+        ],
+        explain: "トップ目の親番では、安手で連荘してもあまり意味が薄いため、多少打点を意識した打ち方をします。",
+      },
+      {
+        hand: ["2m","4m","6p","8p","3s","5s","7s","東","南","西","北","白","發"],
+        context: ["ラスとの点差が8800点ある"],
+        prompt: "放銃してもセーフな打点の目安は？",
+        options: [
+          { t: "1000点まで", c: false },
+          { t: "8000点まで", c: true },
+          { t: "満貫(8000点)を超えても良い", c: false },
+          { t: "12000点まで", c: false },
+        ],
+        explain: "ラスとの点差が、そのまま「放銃してもセーフな打点」の目安になります。点差が8800点なら8000点の放銃までセーフと考えます。",
+      },
+      {
+        hand: ["2m","4m","6p","8p","3s","5s","7s","東","南","西","北","白","發"],
+        context: ["親への放銃に対する基本スタンスの確認"],
+        prompt: "正しいのはどれ？",
+        options: [
+          { t: "親とは関係なく常に同じ警戒度で打つ", c: false },
+          { t: "なるべく親への放銃は避けるが、自分が和了れそうな時は警戒しすぎない", c: true },
+          { t: "親には絶対に放銃しない(必ず降りる)", c: false },
+          { t: "親番の時だけ特別に警戒する", c: false },
+        ],
+        explain: "親への放銃はなるべく避けますが、自分が和了れそうな手牌をもらった時は警戒しすぎずアガリに向かいます。",
+      },
+      {
+        hand: ["2m","4m","6p","8p","3s","5s","7s","東","南","西","北","白","發"],
+        context: ["ラス回避の総括"],
+        prompt: "ネット麻雀でラスさえ引かなければ、トータルの成績はどうなりやすいとされている？",
+        options: [
+          { t: "大きくマイナスになりやすい", c: false },
+          { t: "ほぼプラスマイナスゼロで終われることが多い", c: true },
+          { t: "必ずトップになれる", c: false },
+          { t: "常に2着が取れる", c: false },
+        ],
+        explain: "ラスさえ引かなければ、ほとんどプラスマイナスゼロで終われるというのが、この戦術が目指すところです。",
+      },
+      {
+        hand: ["1m","3m","1p","3p","7s","9s","2m","4m","6p","8p","東","南","西"],
+        context: ["総合判断：配牌は悪いが、まだ序盤で他家にテンパイサインも無い"],
+        prompt: "方針として正しいのは？",
+        options: [
+          { t: "悪い配牌なので早めに降りる準備をする", c: false },
+          { t: "4つの役(リーチ/タンヤオ/役牌/ホンイツ)の基準に沿って通常通りアガリに向かう", c: true },
+          { t: "七対子に切り替える", c: false },
+          { t: "様子見で何も切らない", c: false },
+        ],
+        explain: "配牌がどんなに悪くても降りるという選択肢はなく、4役の基準に沿って通常通りアガリに向かいます。",
+      },
+      {
+        hand: ["發","發","3m","4m","6p","7p","2s","3s","8s","9s","東","南","西"],
+        context: ["総合判断：1シャンテン、良形ターツが2つ余っている状況で鳴ける役牌が出た", "場況的にスピードが欲しい"],
+        prompt: "対応として正しいのは？",
+        options: [
+          { t: "良形同士なのでどちらからでも鳴いてよい", c: true },
+          { t: "鳴かずにリーチだけを待つ", c: false },
+          { t: "役牌を無視する", c: false },
+          { t: "七対子に切り替える", c: false },
+        ],
+        explain: "良形同士の組み合わせでは、基本的にどちらからでも鳴いてよいとされています(タンピン形は例外)。",
+      },
+      {
+        hand: ["2m","4m","6p","8p","3s","5s","7s","東","南","西","北","白","發"],
+        context: ["総合判断：自分は2シャンテン、他家がドラポンを含む2副露をしている", "安牌も少ない"],
+        prompt: "どうすべき？",
+        options: [
+          { t: "ドラポンを含む2副露は4サインの一つなので、安牌が少なくても降りに回る", c: true },
+          { t: "無視してよいサインなので進める", c: false },
+          { t: "あと1副露するまで様子を見る", c: false },
+          { t: "リーチしている人がいないので気にしない", c: false },
+        ],
+        explain: "ドラポンを含む2副露は反応すべき4サインの一つです。自分が2シャンテン以下なら、安牌が少なくても降りに回ります。",
+      },
+    ],
+  },
+];
+
+</script>
+<script>
+/* =========================================================
+   省エネ麻雀道場 - アプリロジック
+   ========================================================= */
+
+const STORAGE_KEY = "shouene_mahjong_dojo_v1";
+
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  const init = {};
+  LEVELS.forEach((l, i) => {
+    init[l.id] = { unlocked: i === 0, best: 0, cleared: false };
+  });
+  return init;
+}
+function saveProgress(p) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
+}
+let progress = loadProgress();
+// backfill in case new levels were added
+LEVELS.forEach((l, i) => {
+  if (!progress[l.id]) progress[l.id] = { unlocked: i === 0, best: 0, cleared: false };
+});
+saveProgress(progress);
+
+/* ---------- Tile rendering ---------- */
+const HONOR_MAP = {
+  "東": { cls: "z", label: "東" },
+  "南": { cls: "z", label: "南" },
+  "西": { cls: "z", label: "西" },
+  "北": { cls: "z", label: "北" },
+  "白": { cls: "haku", label: "白" },
+  "發": { cls: "hatsu", label: "發" },
+  "中": { cls: "chun", label: "中" },
+};
+function tileEl(code) {
+  const div = document.createElement("div");
+  div.className = "tile";
+  const suitChar = code.length >= 2 ? code[code.length - 1] : "";
+  if (["m", "p", "s"].includes(suitChar)) {
+    const num = code.slice(0, -1);
+    div.classList.add(suitChar);
+    div.textContent = num;
+    const mark = document.createElement("span");
+    mark.className = "suit-mark";
+    mark.textContent = suitChar === "m" ? "萬" : suitChar === "p" ? "筒" : "索";
+    div.appendChild(mark);
+  } else if (HONOR_MAP[code]) {
+    const h = HONOR_MAP[code];
+    div.classList.add(h.cls);
+    div.textContent = h.label;
+  } else {
+    div.textContent = code;
+  }
+  return div;
+}
+
+/* ---------- App State ---------- */
+const app = document.getElementById("app");
+let state = {
+  screen: "home", // home | intro | question | result
+  levelId: null,
+  qIndex: 0,
+  order: [],
+  answers: [], // {qIndex, correct}
+  answered: false,
+};
+
+function currentLevel() {
+  return LEVELS.find((l) => l.id === state.levelId);
+}
+function shuffledIndices(n) {
+  const arr = Array.from({ length: n }, (_, i) => i);
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/* ---------- Screens ---------- */
+function render() {
+  app.innerHTML = "";
+  app.appendChild(renderTopbar());
+  const main = document.createElement("main");
+  if (state.screen === "home") main.appendChild(renderHome());
+  else if (state.screen === "intro") main.appendChild(renderIntro());
+  else if (state.screen === "question") main.appendChild(renderQuestion());
+  else if (state.screen === "result") main.appendChild(renderResult());
+  app.appendChild(main);
+  const foot = document.createElement("footer");
+  foot.className = "copyright";
+  foot.textContent = "省エネ麻雀 練習ツール（非公式・学習用）";
+  app.appendChild(foot);
+}
+
+function renderTopbar() {
+  const bar = document.createElement("div");
+  bar.className = "topbar";
+  const brand = document.createElement("div");
+  brand.className = "brand";
+  const icon = document.createElement("div");
+  icon.className = "tile-icon";
+  icon.textContent = "發";
+  const h1 = document.createElement("h1");
+  h1.textContent = "省エネ麻雀道場";
+  brand.appendChild(icon);
+  brand.appendChild(h1);
+  bar.appendChild(brand);
+  const link = document.createElement("a");
+  link.className = "video-link";
+  link.href = "https://www.youtube.com/watch?v=cW2v-N1rZEs";
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.textContent = "解説動画";
+  bar.appendChild(link);
+  return bar;
+}
+
+function overallStats() {
+  let cleared = 0;
+  LEVELS.forEach((l) => { if (progress[l.id].cleared) cleared++; });
+  return { cleared, total: LEVELS.length };
+}
+
+function renderHome() {
+  const frag = document.createDocumentFragment();
+
+  const hero = document.createElement("div");
+  hero.className = "hero";
+  const st = overallStats();
+  hero.innerHTML = `
+    <h2>武井流・省エネ麻雀 実戦ドリル</h2>
+    <p>配牌を見てどの役を目指すか、何を切るか、押すか降りるか、鳴くか――解説動画の流れに沿って、レベル別に練習できます。各レベルは正答率80%以上で次に進めます。</p>
+  `;
+  const prog = document.createElement("div");
+  prog.className = "total-progress";
+  prog.appendChild(progressBar(st.cleared, st.total));
+  hero.appendChild(prog);
+  frag.appendChild(hero);
+
+  const list = document.createElement("div");
+  list.className = "level-list";
+  LEVELS.forEach((l, i) => {
+    const p = progress[l.id];
+    const card = document.createElement("div");
+    card.className = "level-card" + (p.unlocked ? "" : " locked");
+    const num = document.createElement("div");
+    num.className = "num";
+    num.textContent = i + 1;
+    const info = document.createElement("div");
+    info.className = "info";
+    info.innerHTML = `<div class="lt">${l.title}</div><div class="ls">${l.subtitle}</div>`;
+    card.appendChild(num);
+    card.appendChild(info);
+    if (p.unlocked) {
+      const badge = document.createElement("div");
+      badge.className = "badge" + (p.cleared ? " cleared" : "");
+      badge.textContent = p.cleared ? `クリア ${Math.round(p.best * 100)}%` : "挑戦可能";
+      card.appendChild(badge);
+      card.addEventListener("click", () => {
+        state.screen = "intro";
+        state.levelId = l.id;
+        render();
+      });
+    } else {
+      const lock = document.createElement("div");
+      lock.className = "lock-icon";
+      lock.textContent = "🔒";
+      card.appendChild(lock);
+    }
+    list.appendChild(card);
+  });
+  frag.appendChild(list);
+  return frag;
+}
+
+function progressBar(done, total) {
+  const wrap = document.createElement("div");
+  wrap.className = "progress-wrap";
+  const bar = document.createElement("div");
+  bar.className = "progress-bar";
+  const fill = document.createElement("div");
+  fill.className = "progress-fill";
+  fill.style.width = `${total ? (done / total) * 100 : 0}%`;
+  bar.appendChild(fill);
+  const label = document.createElement("div");
+  label.className = "progress-label";
+  label.textContent = `${done}/${total}`;
+  wrap.appendChild(bar);
+  wrap.appendChild(label);
+  return wrap;
+}
+
+function renderIntro() {
+  const l = currentLevel();
+  const p = progress[l.id];
+  const frag = document.createDocumentFragment();
+
+  const back = document.createElement("button");
+  back.className = "btn ghost";
+  back.textContent = "← レベル一覧へ戻る";
+  back.style.textAlign = "left";
+  back.style.padding = "6px 0 14px";
+  back.addEventListener("click", () => { state.screen = "home"; render(); });
+  frag.appendChild(back);
+
+  const hero = document.createElement("div");
+  hero.className = "hero";
+  hero.innerHTML = `<h2>Lv.${l.id} ${l.title}</h2><p>${l.subtitle}</p>`;
+  frag.appendChild(hero);
+
+  const ruleBox = document.createElement("div");
+  ruleBox.className = "rule-box";
+  ruleBox.innerHTML = `<h3>このレベルのルール</h3><p>${l.rule}</p>`;
+  frag.appendChild(ruleBox);
+
+  if (p.cleared) {
+    const info = document.createElement("div");
+    info.className = "rule-box";
+    info.innerHTML = `<h3>これまでの最高正答率</h3><p>${Math.round(p.best * 100)}%（合格ライン ${Math.round(PASS_RATE * 100)}%）</p>`;
+    frag.appendChild(info);
+  }
+
+  const start = document.createElement("button");
+  start.className = "btn";
+  start.textContent = `全${l.questions.length}問 スタート`;
+  start.addEventListener("click", () => {
+    state.screen = "question";
+    state.order = shuffledIndices(l.questions.length);
+    state.qIndex = 0;
+    state.answers = [];
+    state.answered = false;
+    render();
+  });
+  frag.appendChild(start);
+
+  return frag;
+}
+
+function renderQuestion() {
+  const l = currentLevel();
+  const qi = state.order[state.qIndex];
+  const q = l.questions[qi];
+  const frag = document.createDocumentFragment();
+
+  const qHeader = document.createElement("div");
+  qHeader.className = "q-header";
+  qHeader.innerHTML = `<div class="lv-name">Lv.${l.id} ${l.title}</div><div class="q-count">${state.qIndex + 1} / ${l.questions.length}</div>`;
+  frag.appendChild(qHeader);
+
+  const bar = document.createElement("div");
+  bar.className = "progress-bar";
+  bar.style.marginBottom = "14px";
+  const fill = document.createElement("div");
+  fill.className = "progress-fill";
+  fill.style.width = `${(state.qIndex / l.questions.length) * 100}%`;
+  bar.appendChild(fill);
+  frag.appendChild(bar);
+
+  if (q.context && q.context.length) {
+    const chips = document.createElement("div");
+    chips.className = "context-chips";
+    q.context.forEach((c) => {
+      const chip = document.createElement("div");
+      chip.className = "chip";
+      chip.textContent = c;
+      chips.appendChild(chip);
+    });
+    frag.appendChild(chips);
+  }
+
+  const felt = document.createElement("div");
+  felt.className = "table-felt";
+  const row = document.createElement("div");
+  row.className = "hand-row";
+  q.hand.forEach((t) => row.appendChild(tileEl(t)));
+  felt.appendChild(row);
+  frag.appendChild(felt);
+
+  const promptBox = document.createElement("div");
+  promptBox.className = "prompt-box";
+  const p = document.createElement("p");
+  p.textContent = q.prompt;
+  promptBox.appendChild(p);
+  frag.appendChild(promptBox);
+
+  const optionsWrap = document.createElement("div");
+  optionsWrap.className = "options";
+  const letters = ["A", "B", "C", "D"];
+  q.options.forEach((opt, idx) => {
+    const btn = document.createElement("button");
+    btn.className = "option-btn";
+    btn.innerHTML = `<span class="letter">${letters[idx]}</span><span>${opt.t}</span>`;
+    btn.addEventListener("click", () => handleAnswer(qi, opt, btn, optionsWrap));
+    optionsWrap.appendChild(btn);
+  });
+  frag.appendChild(optionsWrap);
+
+  const feedback = document.createElement("div");
+  feedback.className = "feedback";
+  feedback.id = "feedback-box";
+  frag.appendChild(feedback);
+
+  const bottom = document.createElement("div");
+  bottom.className = "bottom-bar";
+  const nextBtn = document.createElement("button");
+  nextBtn.className = "btn";
+  nextBtn.id = "next-btn";
+  nextBtn.textContent = state.qIndex + 1 < l.questions.length ? "次の問題へ" : "結果を見る";
+  nextBtn.style.display = "none";
+  nextBtn.addEventListener("click", () => {
+    if (state.qIndex + 1 < l.questions.length) {
+      state.qIndex++;
+      state.answered = false;
+      render();
+    } else {
+      finishLevel();
+    }
+  });
+  bottom.appendChild(nextBtn);
+  frag.appendChild(bottom);
+
+  return frag;
+}
+
+function handleAnswer(qi, opt, btnEl, optionsWrap) {
+  if (state.answered) return;
+  state.answered = true;
+  const buttons = optionsWrap.querySelectorAll(".option-btn");
+  buttons.forEach((b) => {
+    b.classList.add("disabled");
+  });
+  const l = currentLevel();
+  const q = l.questions[qi];
+  buttons.forEach((b, idx) => {
+    if (q.options[idx].c) b.classList.add("correct");
+    else if (b === btnEl) b.classList.add("wrong");
+    else b.classList.add("dim");
+  });
+
+  const correct = !!opt.c;
+  state.answers.push({ qi, correct });
+
+  const fb = document.getElementById("feedback-box");
+  fb.classList.add("show", correct ? "ok" : "ng");
+  fb.innerHTML = `<div class="fb-title">${correct ? "○ 正解！" : "✗ 不正解"}</div><div>${q.explain}</div>`;
+
+  document.getElementById("next-btn").style.display = "block";
+  document.getElementById("next-btn").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function finishLevel() {
+  const l = currentLevel();
+  const correctCount = state.answers.filter((a) => a.correct).length;
+  const rate = correctCount / l.questions.length;
+  const p = progress[l.id];
+  p.best = Math.max(p.best, rate);
+  const passed = rate >= PASS_RATE;
+  if (passed) {
+    p.cleared = true;
+    const idx = LEVELS.findIndex((x) => x.id === l.id);
+    if (idx + 1 < LEVELS.length) {
+      const nextId = LEVELS[idx + 1].id;
+      progress[nextId].unlocked = true;
+    }
+  }
+  saveProgress(progress);
+  state.screen = "result";
+  state._lastResult = { correctCount, total: l.questions.length, rate, passed };
+  render();
+}
+
+function renderResult() {
+  const l = currentLevel();
+  const r = state._lastResult;
+  const frag = document.createDocumentFragment();
+
+  const card = document.createElement("div");
+  card.className = "result-card " + (r.passed ? "pass" : "fail");
+  const pct = Math.round(r.rate * 100);
+  card.innerHTML = `
+    <div class="score-circle" style="--p:${pct}; --c:${r.passed ? "#4caf7d" : "#e08a6a"}">
+      <div class="num">${pct}%</div>
+      <div class="den">${r.correctCount} / ${r.total} 問正解</div>
+    </div>
+    <h2>${r.passed ? "合格！次のレベルへ進めます" : "もう一息"}</h2>
+    <p>合格ライン：正答率 ${Math.round(PASS_RATE * 100)}%</p>
+  `;
+  frag.appendChild(card);
+
+  const review = document.createElement("div");
+  review.className = "review-list";
+  state.answers.forEach((a) => {
+    const q = l.questions[a.qi];
+    const item = document.createElement("div");
+    item.className = "review-item" + (a.correct ? "" : " wrong");
+    item.innerHTML = `<span class="mark">${a.correct ? "○" : "✗"}</span><span>${q.prompt}</span>`;
+    review.appendChild(item);
+  });
+  frag.appendChild(review);
+
+  const retry = document.createElement("button");
+  retry.className = "btn secondary";
+  retry.textContent = "このレベルをもう一度";
+  retry.style.marginBottom = "10px";
+  retry.addEventListener("click", () => {
+    state.screen = "question";
+    state.order = shuffledIndices(l.questions.length);
+    state.qIndex = 0;
+    state.answers = [];
+    state.answered = false;
+    render();
+  });
+  frag.appendChild(retry);
+
+  const idx = LEVELS.findIndex((x) => x.id === l.id);
+  if (r.passed && idx + 1 < LEVELS.length) {
+    const nextBtn = document.createElement("button");
+    nextBtn.className = "btn";
+    nextBtn.style.marginBottom = "10px";
+    nextBtn.textContent = `Lv.${LEVELS[idx + 1].id} ${LEVELS[idx + 1].title} へ進む`;
+    nextBtn.addEventListener("click", () => {
+      state.levelId = LEVELS[idx + 1].id;
+      state.screen = "intro";
+      render();
+    });
+    frag.appendChild(nextBtn);
+  }
+
+  const home = document.createElement("button");
+  home.className = "btn ghost";
+  home.textContent = "レベル一覧へ戻る";
+  home.addEventListener("click", () => { state.screen = "home"; render(); });
+  frag.appendChild(home);
+
+  return frag;
+}
+
+render();
+
+</script>
+</body>
+</html>
